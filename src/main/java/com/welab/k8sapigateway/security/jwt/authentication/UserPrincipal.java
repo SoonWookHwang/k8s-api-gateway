@@ -24,7 +24,7 @@ public class UserPrincipal implements Principal {
         if( another == null) {
             return false;
         }
-
+        //
         if(!getClass().isAssignableFrom(another.getClass())) {
             return false;
         }
@@ -45,7 +45,8 @@ public class UserPrincipal implements Principal {
 
     @Override
     public int hashCode() {
-        return userId != null? userId.hashCode() : 0;
+        int result = userId != null? userId.hashCode() : 0;
+        return result;
     }
 
     @Override

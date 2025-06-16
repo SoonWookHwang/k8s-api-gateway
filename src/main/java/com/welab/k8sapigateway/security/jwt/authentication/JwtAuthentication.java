@@ -1,10 +1,12 @@
 package com.welab.k8sapigateway.security.jwt.authentication;
 
+import lombok.Getter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 
+@Getter
 public class JwtAuthentication extends AbstractAuthenticationToken {
     private final String token;
     private final UserPrincipal principal;

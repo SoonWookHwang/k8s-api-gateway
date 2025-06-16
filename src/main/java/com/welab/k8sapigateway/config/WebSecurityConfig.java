@@ -1,6 +1,8 @@
 package com.welab.k8sapigateway.config;
 
 
+import com.welab.k8sapigateway.security.exception.RestAccessDeniedHandler;
+import com.welab.k8sapigateway.security.exception.RestAuthenticationEntryPoint;
 import com.welab.k8sapigateway.security.filter.JwtAuthenticationFilter;
 import com.welab.k8sapigateway.security.jwt.JwtTokenValidator;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class WebSecurityConfig {
     private final JwtTokenValidator jwtTokenValidator;
+    private final RestAuthenticationEntryPoint authenticationEntryPoint;
+    private final RestAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public SecurityFilterChain applicationSecurity(HttpSecurity http) throws Exception {
@@ -33,14 +37,17 @@ public class WebSecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .securityMatcher("/**")
                 .sessionManagement(sessionManagementConfigurer ->
-                    sessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        sessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .addFilterBefore(
                         new JwtAuthenticationFilter(jwtTokenValidator),
                         UsernamePasswordAuthenticationFilter.class
-                )
-                .authorizeHttpRequests(registry -> registry
+                ).exceptionHandling(exceptionConfig ->
+                        exceptionConfig
+                                .authenticationEntryPoint(authenticationEntryPoint)
+                                .accessDeniedHandler(accessDeniedHandler)
+                ).authorizeHttpRequests(registry -> registry
                         .requestMatchers("/api/user/v1/auth/**").permitAll()
                         .anyRequest().authenticated()
                 );
@@ -55,7 +62,7 @@ public class WebSecurityConfig {
         config.setAllowCredentials(true);
 //        config.setAllowedOrigins(List.of("*"));
         config.setAllowedOriginPatterns(List.of("*"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE","PATCH", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("*"));
 
